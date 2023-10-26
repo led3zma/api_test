@@ -1,26 +1,8 @@
-use std::fs;
-
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 use log::info;
-use serde::Serialize;
 
-#[derive(Serialize)]
-struct Info {
-    message: String,
-}
-
-async fn api() -> impl Responder {
-    info!("Handling index request!");
-    web::Json(Info {
-        message: "Hello World!".into(),
-    })
-}
-
-async fn index() -> impl Responder {
-    HttpResponse::Ok()
-        .content_type("text/html")
-        .body(fs::read_to_string("frontend/index.html").unwrap())
-}
+mod api;
+use crate::api::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -28,8 +10,8 @@ async fn main() -> std::io::Result<()> {
     info!("Starting server...");
     HttpServer::new(|| {
         App::new()
-            .route("/", web::get().to(index))
-            .route("/api/message", web::get().to(api))
+            .route("/", web::get().to(routes::index))
+            .route("/api/message", web::get().to(routes::api))
     })
     .bind("127.0.0.1:3000")?
     .run()
