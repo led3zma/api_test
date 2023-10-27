@@ -1,7 +1,6 @@
-use std::fs;
-
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, Responder};
 use log::info;
+use rand::Rng;
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -9,15 +8,26 @@ struct Info {
     message: String,
 }
 
-pub async fn api() -> impl Responder {
+pub async fn api(req: HttpRequest) -> impl Responder {
     info!("Handling index request!");
-    web::Json(Info {
-        message: "Hello World!".into(),
-    })
+    info!(
+        "Request: Origin {:?}, Referer {:?}",
+        req.headers().get("origin"),
+        req.headers().get("Referer")
+    );
+    if let Some(_) = req.headers().get("origin") {
+        return web::Json(Info {
+            message: "Hello World!".into(),
+        });
+    }
+
+    web::Json(Info { message: "".into() })
 }
 
-pub async fn index() -> impl Responder {
-    HttpResponse::Ok()
-        .content_type("text/html")
-        .body(fs::read_to_string("frontend/index.html").unwrap())
+pub async fn random() -> impl Responder {
+    info!("Handling random number request!");
+    let mut rng = rand::thread_rng();
+    web::Json(Info {
+        message: rng.gen_range(0..100).to_string(),
+    })
 }
