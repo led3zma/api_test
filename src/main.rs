@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 use log::info;
 
@@ -9,11 +10,13 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
     info!("Starting server...");
     HttpServer::new(|| {
+        let cors = Cors::default().allow_any_origin().send_wildcard();
         App::new()
-            .route("/", web::get().to(routes::index))
+            .wrap(cors)
             .route("/api/message", web::get().to(routes::api))
+            .route("/api/random", web::get().to(routes::random))
     })
-    .bind("127.0.0.1:3000")?
+    .bind("0.0.0.0:3000")?
     .run()
     .await
 }
